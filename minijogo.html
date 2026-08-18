@@ -48,11 +48,12 @@
 </head>
 <body>
 
-    <div id="aviso-alerta">⚠️ ATENÇÃO: Desvie dos emojis com luz vermelha ao redor e utilize o portal energético!</div>
+    <div id="aviso-alerta">⚠️ Use as setas ← → ou A/D para mover. Tecla P para Pausar. Cuidado com os emojis de luz vermelha!</div>
     <div id="hud">
         <span id="txt-tempo">Tempo: 120s</span>
         <span id="txt-pontos">Pontos: 0</span>
         <span id="txt-co2">CO₂: 12.5 kg</span>
+        <span id="txt-recorde">Recorde: 0</span>
     </div>
 
     <canvas id="gameCanvas" width="600" height="450"></canvas>
@@ -64,18 +65,20 @@
         let tempoRestante = 120;
         let pontos = 0;
         let co2 = 12.5;
+        let pausado = false;
+        let recorde = localStorage.getItem("recordePomerode") || 0;
+        document.getElementById("txt-recorde").innerText = `Recorde: ${recorde}`;
 
-        // Jogador (Colono detalhado com cabeça, rosto, cabelo, braços e pernas)
         let player = {
             x: 270,
             y: 375,
             w: 45,
             h: 60,
-            speed: 6,
+            speed: 7,
             dx: 0
         };
 
-        // Portal Energético de Pomerode
+        // Portal Energético de Pomerode interativo
         let portal = {
             x: Math.random() * 500 + 50,
             y: 220,
@@ -85,12 +88,10 @@
         };
 
         const itensConfig = [
-            // Bons
             { emoji: "🌳", tipo: "bom", pts: 10, co2Change: -1.5, r: 18 },
             { emoji: "⚡", tipo: "bom", pts: 15, co2Change: -2.0, r: 18 },
             { emoji: "🏫", tipo: "bom", pts: 20, co2Change: -2.5, r: 18 },
             { emoji: "🚲", tipo: "bom", pts: 12, co2Change: -1.0, r: 18 },
-            // Ruins (Com luz vermelha)
             { emoji: "🏭", tipo: "ruim", pts: -15, co2Change: 4.5, r: 18 },
             { emoji: "🚗", tipo: "ruim", pts: -10, co2Change: 3.0, r: 18 },
             { emoji: "🗑️", tipo: "ruim", pts: -10, co2Change: 2.5, r: 18 }
@@ -99,7 +100,7 @@
         let objetos = [];
 
         function criarObjeto() {
-            if (tempoRestante <= 0) return;
+            if (tempoRestante <= 0 || pausado) return;
             const config = itensConfig[Math.floor(Math.random() * itensConfig.length)];
             objetos.push({
                 x: Math.random() * (canvas.width - 40) + 20,
@@ -113,31 +114,50 @@
             });
         }
 
+        // Suporte robusto para as teclas do notebook (Setas e A/D) e Pausa (P)
+        const teclasPressionadas = {};
+
         window.addEventListener("keydown", (e) => {
-            if (e.key === "ArrowLeft" || e.key === "a") player.dx = -player.speed;
-            if (e.key === "ArrowRight" || e.key === "d") player.dx = player.speed;
+            const key = e.key.toLowerCase();
+            
+            if (key === 'p') {
+                pausado = !pausado;
+                return;
+            }
+
+            if (key === "arrowleft" || key === "a") teclasPressionadas["left"] = true;
+            if (key === "arrowright" || key === "d") teclasPressionadas["right"] = true;
         });
 
         window.addEventListener("keyup", (e) => {
-            if ((e.key === "ArrowLeft" || e.key === "a") && player.dx < 0) player.dx = 0;
-            if ((e.key === "ArrowRight" || e.key === "d") && player.dx > 0) player.dx = 0;
+            const key = e.key.toLowerCase();
+            if (key === "arrowleft" || key === "a") teclasPressionadas["left"] = false;
+            if (key === "arrowright" || key === "d") teclasPressionadas["right"] = false;
         });
 
-        function atualizar() {
+        function atualizarMovimento() {
+            player.dx = 0;
+            if (teclasPressionadas["left"]) player.dx = -player.speed;
+            if (teclasPressionadas["right"]) player.dx = player.speed;
+
             player.x += player.dx;
             if (player.x < 0) player.x = 0;
             if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
+        }
 
-            // Interação com o Portal Energético
+        function atualizar() {
+            if (pausado) return;
+
+            atualizarMovimento();
+
             if (portal.ativo) {
                 let pDistX = (player.x + player.w/2) - (portal.x + portal.w/2);
                 let pDistY = (player.y + player.h/2) - (portal.y + portal.h/2);
                 if (Math.sqrt(pDistX * pDistX + pDistY * pDistY) < 40) {
-                    pontos += 30; // Bônus do portal
+                    pontos += 30;
                     co2 -= 3.0;
                     if (co2 < 0) co2 = 0;
                     portal.ativo = false;
-                    // Reposiciona o portal após alguns segundos
                     setTimeout(() => {
                         portal.x = Math.random() * 500 + 50;
                         portal.ativo = true;
@@ -145,7 +165,6 @@
                 }
             }
 
-            // Atualiza objetos que caem
             for (let i = objetos.length - 1; i >= 0; i--) {
                 let obj = objetos[i];
                 obj.y += obj.speed;
@@ -186,6 +205,16 @@
             ctx.arc(player.x + 20, player.y + 10, 10, 0, Math.PI * 2);
             ctx.fill();
 
+            // Rosto detalhado (Olhos e Sorriso)
+            ctx.fillStyle = "#2c3e50";
+            ctx.fillRect(player.x + 16, player.y + 8, 2, 2);
+            ctx.fillRect(player.x + 22, player.y + 8, 2, 2);
+            ctx.strokeStyle = "#2c3e50";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(player.x + 20, player.y + 11, 4, 0, Math.PI);
+            ctx.stroke();
+
             // Cabelo detalhado
             ctx.fillStyle = "#4a2511";
             ctx.fillRect(player.x + 12, player.y + 1, 16, 5);
@@ -196,14 +225,40 @@
             ctx.fillRect(player.x + 12, player.y - 9, 16, 6);
         }
 
+        function desenharPortalFundo() {
+            // Portal de Pomerode estilizado e imponente ao fundo (atrás dos elementos)
+            ctx.save();
+            ctx.strokeStyle = "#d35400";
+            ctx.lineWidth = 8;
+            ctx.strokeRect(210, 80, 180, 220); // Estrutura enxaimel do portal
+
+            ctx.fillStyle = "rgba(44, 62, 80, 0.9)";
+            ctx.fillRect(218, 88, 164, 204);
+
+            ctx.fillStyle = "#ecf0f1";
+            ctx.font = "bold 13px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("POMERODE", 300, 115);
+
+            // Brilho interno do portal de fundo
+            ctx.shadowColor = "#f1c40f";
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = "rgba(241, 196, 15, 0.2)";
+            ctx.fillRect(230, 130, 140, 145);
+            ctx.restore();
+        }
+
         function desenhar() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Portal de fundo de Pomerode (estético e fixo)
+            desenharPortalFundo();
 
             // Chão de Pomerode
             ctx.fillStyle = "#2ecc71";
             ctx.fillRect(0, canvas.height - 15, canvas.width, 15);
 
-            // Desenhar Portal Energético se estiver ativo
+            // 2. Portal Energético interativo na tela
             if (portal.ativo) {
                 ctx.save();
                 ctx.shadowColor = "#00ffff";
@@ -222,10 +277,10 @@
                 ctx.restore();
             }
 
-            // Desenhar Jogador Real
+            // 3. Jogador detalhado
             desenharBonecoReal();
 
-            // Desenhar Emojis
+            // 4. Emojis
             for (let obj of objetos) {
                 ctx.save();
                 if (obj.tipo === "ruim") {
@@ -242,33 +297,51 @@
                 ctx.fillText(obj.emoji, obj.x, obj.y);
                 ctx.restore();
             }
+
+            // Tela de Pausa
+            if (pausado) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "white";
+                ctx.font = "bold 26px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("JOGO PAUSADO", canvas.width / 2, canvas.height / 2);
+                ctx.font = "16px sans-serif";
+                ctx.fillText("Pressione 'P' para continuar", canvas.width / 2, canvas.height / 2 + 30);
+            }
         }
 
         function loop() {
-            if (tempoRestante > 0) {
-                atualizar();
-                desenhar();
-            }
+            atualizar();
+            desenhar();
         }
 
         setInterval(criarObjeto, 900);
 
         const timerInterval = setInterval(() => {
-            if (tempoRestante > 0) {
+            if (tempoRestante > 0 && !pausado) {
                 tempoRestante--;
                 document.getElementById("txt-tempo").innerText = `Tempo: ${tempoRestante}s`;
                 document.getElementById("txt-pontos").innerText = `Pontos: ${pontos}`;
                 document.getElementById("txt-co2").innerText = `CO₂: ${co2.toFixed(1)} kg`;
-            } else {
+            } else if (tempoRestante <= 0) {
                 clearInterval(timerInterval);
-                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                
+                // Atualiza Recorde Local
+                if (pontos > recorde) {
+                    recorde = pontos;
+                    localStorage.setItem("recordePomerode", recorde);
+                }
+
+                ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = "white";
                 ctx.font = "24px sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText("Fim da Missão!", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.fillText("Fim da Missão!", canvas.width / 2, canvas.height / 2 - 30);
                 ctx.font = "16px sans-serif";
-                ctx.fillText(`Pontuação Final: ${pontos} | CO₂ Final: ${co2.toFixed(1)} kg`, canvas.width / 2, canvas.height / 2 + 20);
+                ctx.fillText(`Pontuação Final: ${pontos} | Recorde: ${recorde}`, canvas.width / 2, canvas.height / 2 + 10);
+                ctx.fillText(`CO₂ Final: ${co2.toFixed(1)} kg`, canvas.width / 2, canvas.height / 2 + 40);
             }
         }, 1000);
 
