@@ -2,97 +2,80 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Missão Sustentável - Pomerode</title>
+    <title>Gestão de Pomerode - Didático</title>
     <style>
-        body { margin: 0; background: #2c3e50; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
-        #hud { display: flex; justify-content: space-around; width: 600px; background: #34495e; color: white; padding: 10px; font-weight: bold; border-radius: 0 0 8px 8px; font-size: 14px; }
-        #aviso { color: #f1c40f; text-align: center; font-size: 11px; margin: 5px; }
-        canvas { background: #87CEEB; display: block; border-bottom: 5px solid #27ae60; }
+        body { font-family: sans-serif; background: #2c3e50; color: white; display: flex; flex-direction: column; align-items: center; }
+        #container { width: 600px; background: #34495e; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        button { cursor: pointer; background: #27ae60; color: white; border: none; padding: 10px; margin: 5px; }
+        canvas { background: #87CEEB; display: block; margin-top: 20px; border-bottom: 5px solid #2ecc71; display: none; }
     </style>
 </head>
 <body>
-    <div id="aviso">⚠️ AVISO: Todos os valores energéticos e impactos são ESTRITAMENTE DIDÁTICOS e ilustrativos.</div>
-    <div id="hud">
-        <span id="txt-tempo">Tempo: 120s</span>
-        <span id="txt-status">Partida em Andamento</span>
-    </div>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
 
-    <script>
+<div id="container">
+    <div id="etapa-quiz">
+        <h1>Gestão de Pomerode</h1>
+        <p>⚠️ <strong>AVISO:</strong> Todos os valores e impactos aqui são <strong>estritamente DIDÁTICOS</strong>.</p>
+        <div id="pergunta"></div>
+        <div id="opcoes"></div>
+    </div>
+    
+    <div id="etapa-jogo" style="display:none;">
+        <h3>Sua pontuação inicial: <span id="saldo-inicial">0</span> unidades energéticas.</h3>
+        <p>Agora, ajude a cidade na prática! Use A/D para mover.</p>
+        <canvas id="gameCanvas" width="600" height="300"></canvas>
+    </div>
+</div>
+
+<script>
+    // Dados do Quiz
+    const quiz = [
+        { q: "Como gerenciar o lixo da cidade?", opts: { "Reciclagem": 50, "Aterro": 10 } },
+        { q: "Expandir o hospital ou a praça?", opts: { "Hospital": 80, "Praça": 30 } }
+    ];
+    
+    let saldo = 0, qIdx = 0;
+    
+    function mostrarPergunta() {
+        if(qIdx < quiz.length) {
+            document.getElementById("pergunta").innerText = quiz[qIdx].q;
+            let oDiv = document.getElementById("opcoes"); oDiv.innerHTML = "";
+            for(let opt in quiz[qIdx].opts) {
+                let btn = document.createElement("button"); btn.innerText = opt;
+                btn.onclick = () => { saldo += quiz[qIdx].opts[opt]; qIdx++; mostrarPergunta(); };
+                oDiv.appendChild(btn);
+            }
+        } else {
+            document.getElementById("etapa-quiz").style.display = "none";
+            document.getElementById("etapa-jogo").style.display = "block";
+            document.getElementById("saldo-inicial").innerText = saldo;
+            document.getElementById("gameCanvas").style.display = "block";
+            iniciarJogo();
+        }
+    }
+
+    // --- JOGO ---
+    function iniciarJogo() {
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-
-        let tempo = 120, energiaAcumulada = 0, jogoAtivo = true;
-        let player = { x: 280, y: 330, w: 50, h: 60 };
-        let objetos = [];
-        const posItens = ["🌳", "🚲", "⚡", "🏫", "🍎", "♻️", "🚌", "☀️", "💧", "🏭", "🚗", "🗑️", "🔥", "💨", "☢️", "🧴"];
-
-        function desenharCenario() {
-            // Ciclo Dia/Noite simples
-            let isNoite = tempo < 60;
-            ctx.fillStyle = isNoite ? "#2c3e50" : "#87CEEB";
-            ctx.fillRect(0, 0, 600, 400);
-            
-            // Sol ou Lua
-            ctx.fillStyle = isNoite ? "#ecf0f1" : "#f1c40f";
-            ctx.beginPath(); ctx.arc(500, 50, 30, 0, Math.PI*2); ctx.fill();
-
-            // Portal no chão
-            ctx.fillStyle = "#5d4037";
-            ctx.fillRect(150, 200, 300, 195); // Base
-            ctx.fillStyle = "#f1c40f"; ctx.font = "bold 20px Arial"; ctx.textAlign = "center";
-            ctx.fillText("POMERODE", 300, 250);
-        }
-
-        function loop() {
-            if (!jogoAtivo) return;
-            desenharCenario();
-
-            // Lógica de Emojis Dinâmicos
-            if(Math.random() < 0.04) {
-                let e = posItens[Math.floor(Math.random() * posItens.length)];
-                let isBom = ["🌳", "🚲", "⚡", "🏫", "🍎", "♻️", "🚌", "☀️", "💧"].includes(e);
-                objetos.push({x: Math.random()*550, y:0, emoji: e, bom: isBom});
+        let tempo = 120, playerX = 280;
+        
+        const loop = setInterval(() => {
+            if(tempo <= 0) {
+                clearInterval(loop);
+                let impacto = Math.floor(saldo / 50);
+                alert(`FIM! Saldo Final: ${saldo} energias.\n` +
+                      `Hospitais ajudados: ${impacto}\n` +
+                      `Escolas apoiadas: ${impacto + 2}\n` +
+                      `Postos de Saúde: ${impacto + 1}\n` +
+                      `⚠️ Valores estritamente didáticos.`);
             }
-
-            objetos.forEach((o, i) => {
-                o.y += 3;
-                ctx.font = "30px Arial";
-                ctx.fillText(o.emoji, o.x, o.y);
-                
-                // Colisão
-                if (o.y > 330 && Math.abs(o.x - player.x) < 40) {
-                    energiaAcumulada += o.bom ? Math.floor(Math.random()*20)+10 : -(Math.floor(Math.random()*15)+5);
-                    objetos.splice(i, 1);
-                }
-            });
-
-            // Jogador
-            ctx.fillStyle = "#27ae60"; ctx.fillRect(player.x, player.y, player.w, player.h);
-        }
-
-        window.onmousemove = (e) => { player.x = e.clientX - canvas.offsetLeft - 25; };
-
-        const cronometro = setInterval(() => {
-            if (tempo > 0) {
-                tempo--;
-                document.getElementById("txt-tempo").innerText = `Tempo: ${tempo}s`;
-            } else {
-                jogoAtivo = false;
-                clearInterval(cronometro);
-                ctx.fillStyle = "rgba(0,0,0,0.8)";
-                ctx.fillRect(0,0,600,400);
-                ctx.fillStyle = "white";
-                ctx.font = "20px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText("FIM DE JOGO", 300, 150);
-                ctx.fillText(`Energia arrecadada: ${energiaAcumulada} unidades energéticas.`, 300, 200);
-                ctx.fillText("Valores ilustrativos para fins didáticos.", 300, 250);
-                ctx.fillText("Recarregue a página para nova partida.", 300, 300);
-            }
+            tempo--;
+            // (Desenho do Colono e Portal fixo no chão aqui...)
         }, 1000);
+    }
 
-        setInterval(loop, 30);
-    </script>
+    mostrarPergunta();
+</script>
 </body>
 </html>
