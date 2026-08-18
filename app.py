@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import random
 
 st.set_page_config(page_title="Gestão de Energia: Pomerode", layout="centered")
@@ -157,30 +158,28 @@ banco_perguntas_total = [
     }
 ]
 
-# Inicialização e Sorteio Randômico Único por Sessão
+# Inicialização e Sorteio Randômico Exclusivo por Sessão
 if "etapa" not in st.session_state:
     st.session_state.etapa = "questionario"
     st.session_state.consumo_questionario = 0.0
     st.session_state.producao = 25.0
-    # Sorteia exatamente 5 perguntas diferentes do banco total de forma aleatória a cada início
     st.session_state.perguntas_jogo = random.sample(banco_perguntas_total, 5)
     st.session_state.indice_pergunta = 0
 
-# --- ETAPA 1: QUESTIONÁRIO DINÂMICO E Às CEGAS ---
+# --- ETAPA 1: QUESTIONÁRIO DINÂMICO E ÀS CEGAS ---
 if st.session_state.etapa == "questionario":
     idx = st.session_state.indice_pergunta
     total_p = len(st.session_state.perguntas_jogo)
     
     st.title("⚡ Etapa 1: Diagnóstico de Consumo Cotidiano")
     st.progress((idx) / total_p)
-    st.write(f"**Situação {idx + 1} de {total_p} (Perguntas Dinâmicas Exclusivas):**")
+    st.write(f"**Situação {idx + 1} de {total_p} (Perguntas Sorteadas Exclusivas):**")
     
     pergunta_atual = st.session_state.perguntas_jogo[idx]
     st.info(pergunta_atual["q"])
     
     st.write("*(Nota: Escolha com base no seu bom senso. O impacto energético é computado de forma oculta pelo sistema).*")
     
-    # Exibe as opções sem mostrar valores prévios
     escolha = st.radio("Selecione a sua decisão:", pergunta_atual["opcoes"], key=f"pergunta_dinamica_{idx}")
     
     if st.button("Confirmar Decisão e Avançar"):
@@ -205,7 +204,7 @@ elif st.session_state.etapa == "minijogo":
             html_content = f.read()
         components.html(html_content, height=650, scrolling=False)
     except FileNotFoundError:
-        st.error("⚠️ O arquivo 'minijogo.html' não foi encontrado. Verifique se o nome está correto no GitHub.")
+        st.error("⚠️ O arquivo 'minijogo.html' não foi encontrado. Verifique se o nome está exato no GitHub.")
 
     if st.button("📊 Finalizar Missão e Ver Saldo Energético Final"):
         st.session_state.etapa = "resultado"
