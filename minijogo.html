@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <title>Missão Sustentável - Pomerode</title>
     <style>
-        body { margin: 0; padding: 0; background: #2c3e50; display: flex; flex-direction: column; align-items: center; }
+        body { margin: 0; padding: 0; background: #eef2f3; display: flex; flex-direction: column; align-items: center; overflow: hidden; font-family: sans-serif; }
         #hud { display: flex; justify-content: space-around; width: 600px; background: #2c3e50; color: white; padding: 10px; font-weight: bold; border-radius: 0 0 8px 8px; }
-        canvas { display: block; margin-top: 5px; border-radius: 8px; border: 4px solid #5d4037; }
+        canvas { background: #87CEEB; display: block; margin-top: 5px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -14,7 +14,7 @@
     <div id="hud">
         <span id="txt-tempo">Tempo: 120s</span>
         <span id="txt-pontos">Pontos: 0</span>
-        <span id="txt-co2">Qualidade: 100%</span>
+        <span id="txt-co2">CO₂: 12.5 kg</span>
     </div>
 
     <canvas id="gameCanvas" width="600" height="450"></canvas>
@@ -23,78 +23,85 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        let tempo = 120, pontos = 0, qualidade = 100, pausado = false;
-        let player = { x: 270, y: 380, w: 45, h: 60, speed: 7, dx: 0 };
+        let tempo = 120, pontos = 0, co2 = 12.5, qualidade = 100, pausado = false;
+        let player = { x: 280, y: 370, w: 45, h: 60, speed: 8, dx: 0 };
         let objetos = [];
-        let luzesAtivas = true;
+        let teclas = {};
 
-        const teclas = {};
-        window.addEventListener("keydown", (e) => {
-            const k = e.key.toLowerCase();
-            if (k === 'p') pausado = !pausado;
-            if (k === "arrowleft" || k === "a") teclas["left"] = true;
-            if (k === "arrowright" || k === "d") teclas["right"] = true;
+        window.addEventListener("keydown", (e) => { 
+            if(e.key.toLowerCase() === 'p') pausado = !pausado;
+            teclas[e.key.toLowerCase()] = true; 
         });
-        window.addEventListener("keyup", (e) => {
-            const k = e.key.toLowerCase();
-            if (k === "arrowleft" || k === "a") teclas["left"] = false;
-            if (k === "arrowright" || k === "d") teclas["right"] = false;
-        });
+        window.addEventListener("keyup", (e) => { teclas[e.key.toLowerCase()] = false; });
 
         function desenharPortal() {
-            // Estrutura do Portal de Pomerode
-            ctx.fillStyle = "#5d4037"; // Madeira
-            ctx.fillRect(100, 150, 100, 200); // Esquerda
-            ctx.fillRect(400, 150, 100, 200); // Direita
-            ctx.fillRect(100, 120, 400, 30);  // Travessa
+            // Pilares
+            ctx.fillStyle = "#5d4037";
+            ctx.fillRect(50, 150, 100, 200); ctx.fillRect(450, 150, 100, 200);
+            ctx.fillRect(50, 120, 500, 30); // Travessa
+
+            // Texto
+            ctx.fillStyle = "#f1c40f"; ctx.font = "bold 25px Arial"; ctx.textAlign = "center";
+            ctx.fillText("POMERODE", 300, 142);
 
             // Telhados
             ctx.fillStyle = "#8b4513";
-            ctx.beginPath(); ctx.moveTo(80, 150); ctx.lineTo(150, 50); ctx.lineTo(220, 150); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(380, 150); ctx.lineTo(450, 50); ctx.lineTo(520, 150); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(30, 150); ctx.lineTo(100, 60); ctx.lineTo(170, 150); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(430, 150); ctx.lineTo(500, 60); ctx.lineTo(570, 150); ctx.fill();
 
-            // Luzinhas (Piscam se qualidade baixa)
-            ctx.fillStyle = (luzesAtivas || Math.random() > 0.5) ? "#f1c40f" : "transparent";
-            for(let i=0; i<40; i++) {
-                ctx.fillRect(80 + i*3.5, 150 - (i%2)*20, 4, 4);
+            // Luzes Natalinas (Ambas os lados, piscam se qualidade baixa)
+            let piscar = qualidade < 50 && Math.floor(Date.now() / 200) % 2 === 0;
+            if (qualidade >= 50 || !piscar) {
+                ctx.fillStyle = "#f1c40f";
+                for(let i=0; i<30; i++) {
+                    ctx.fillRect(30 + i*4.6, 150 - (i%5)*10, 5, 5); // Esq
+                    ctx.fillRect(430 + i*4.6, 150 - (i%5)*10, 5, 5); // Dir
+                }
             }
         }
 
         function loop() {
             if (pausado) return;
-            
-            // Movimento
-            player.dx = (teclas["left"] ? -player.speed : 0) + (teclas["right"] ? player.speed : 0);
-            player.x = Math.max(0, Math.min(canvas.width - player.w, player.x + player.dx));
 
-            // Fundo reativo
-            ctx.fillStyle = `rgb(${135 - (100-qualidade)}, ${206 - (100-qualidade)}, ${235 - (100-qualidade)})`;
-            ctx.fillRect(0,0, canvas.width, canvas.height);
+            // Fundo e Chão
+            ctx.fillStyle = `rgb(${135*(qualidade/100)}, ${206*(qualidade/100)}, ${235*(qualidade/100)})`;
+            ctx.fillRect(0,0, 600, 450);
+            ctx.fillStyle = "#2ecc71"; ctx.fillRect(0, 435, 600, 15);
 
             desenharPortal();
-            
-            // Boneco
-            ctx.fillStyle = "#27ae60"; ctx.fillRect(player.x+5, player.y+20, 30, 25);
-            ctx.fillStyle = "#f39c12"; ctx.beginPath(); ctx.arc(player.x+20, player.y+10, 10, 0, Math.PI*2); ctx.fill();
 
-            // Objetos (Lógica simplificada)
-            if(Math.random() < 0.03) objetos.push({x: Math.random()*500, y:0, tipo: Math.random() > 0.5 ? 'bom' : 'ruim'});
+            // Jogador
+            if(teclas["arrowleft"] || teclas["a"]) player.x -= player.speed;
+            if(teclas["arrowright"] || teclas["d"]) player.x += player.speed;
+            player.x = Math.max(0, Math.min(560, player.x));
             
-            objetos.forEach((obj, i) => {
-                obj.y += 3;
-                ctx.font = "30px Arial";
-                ctx.fillText(obj.tipo === 'bom' ? '🌳' : '🏭', obj.x, obj.y);
-                
-                if(obj.y > 400) {
-                    if(obj.tipo === 'bom') { pontos+=10; qualidade=Math.min(100, qualidade+5); }
-                    else { pontos-=10; qualidade=Math.max(0, qualidade-10); }
-                    objetos.splice(i, 1);
+            ctx.fillStyle = "#27ae60"; ctx.fillRect(player.x, player.y, 40, 60);
+            ctx.fillStyle = "#f39c12"; ctx.beginPath(); ctx.arc(player.x+20, player.y+10, 15, 0, Math.PI*2); ctx.fill();
+
+            // Objetos
+            if(Math.random() < 0.03) {
+                let isRuim = Math.random() > 0.5;
+                objetos.push({x: Math.random()*560, y:0, tipo: isRuim ? 'ruim' : 'bom', emoji: isRuim ? '🏭' : '🌳'});
+            }
+            
+            objetos.forEach((o, i) => {
+                o.y += 4;
+                // Efeito visual para negativo
+                if (o.tipo === 'ruim') {
+                    ctx.fillStyle = "rgba(255,0,0,0.3)";
+                    ctx.beginPath(); ctx.arc(o.x+12, o.y+12, 25, 0, Math.PI*2); ctx.fill();
                 }
+                ctx.font = "30px sans-serif"; ctx.fillText(o.emoji, o.x, o.y);
+                
+                // Colisão simples
+                if (o.y > 370 && o.y < 430 && Math.abs(o.x - player.x) < 30) {
+                    o.tipo === 'bom' ? (pontos+=10, qualidade=Math.min(100, qualidade+5)) : (pontos-=10, qualidade=Math.max(0, qualidade-10));
+                    objetos.splice(i, 1);
+                } else if(o.y > 450) objetos.splice(i, 1);
             });
-
-            luzesAtivas = (qualidade > 40);
+            
+            document.getElementById("txt-pontos").innerText = "Pontos: " + pontos;
         }
-
         setInterval(loop, 30);
     </script>
 </body>
