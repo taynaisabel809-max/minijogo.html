@@ -6,7 +6,7 @@
     <style>
         body { margin: 0; padding: 0; background: #eef2f3; display: flex; flex-direction: column; align-items: center; overflow: hidden; font-family: sans-serif; }
         #hud { display: flex; justify-content: space-around; width: 600px; background: #2c3e50; color: white; padding: 10px; font-weight: bold; border-radius: 0 0 8px 8px; font-size: 14px; }
-        canvas { background: #87CEEB; display: block; margin-top: 5px; border-radius: 8px; }
+        canvas { background: #87CEEB; display: block; margin-top: 5px; border-radius: 8px; touch-action: none; }
     </style>
 </head>
 <body>
@@ -24,13 +24,15 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
+        let estadoJogo = "menu"; // "menu", "jogando", "fim"
+        let modoControle = "teclado"; // "teclado" ou "celular"
         let tempo = 120, pontos = 0, co2 = 12.5, qualidade = 100, pausado = false;
         let itensBonsColetados = 0, itensRuinsColetados = 0;
-        let tempoPiscarPortal = 0; // Adicionado apenas para o controle do piscar do portal ao pegar item ruim
+        let tempoPiscarPortal = 0;
         let recorde = localStorage.getItem("recordePomerode") || 0;
         document.getElementById("txt-recorde").innerText = "Recorde: " + recorde;
 
-        let player = { x: 280, y: 370, w: 45, h: 60, speed: 8, dx: 0 };
+        let player = { x: 280, y: 370, w: 45, h: 60, speed: 8 };
         let objetos = [];
         let teclas = {};
 
@@ -49,6 +51,35 @@
             if(k === "arrowright" || k === "d") teclas["right"] = false;
         });
 
+        // Suporte a toque na tela para celular
+        canvas.addEventListener("pointermove", (e) => {
+            if (estadoJogo === "jogando" && modoControle === "celular") {
+                const rect = canvas.getBoundingClientRect();
+                let mouseX = e.clientX - rect.left;
+                player.x = mouseX - player.w / 2;
+                player.x = Math.max(0, Math.min(560, player.x));
+            }
+        });
+
+        canvas.addEventListener("click", (e) => {
+            if (estadoJogo === "menu") {
+                const rect = canvas.getBoundingClientRect();
+                let x = e.clientX - rect.left;
+                let y = e.clientY - rect.top;
+
+                // Botão Computador/Notebook
+                if (x >= 120 && x <= 280 && y >= 250 && y <= 310) {
+                    modoControle = "teclado";
+                    estadoJogo = "jogando";
+                }
+                // Botão Celular
+                if (x >= 320 && x <= 480 && y >= 250 && y <= 310) {
+                    modoControle = "celular";
+                    estadoJogo = "jogando";
+                }
+            }
+        });
+
         function desenharPortal() {
             ctx.fillStyle = "#5d4037";
             ctx.fillRect(50, 150, 100, 285); 
@@ -62,7 +93,6 @@
             ctx.beginPath(); ctx.moveTo(30, 150); ctx.lineTo(100, 60); ctx.lineTo(170, 150); ctx.fill();
             ctx.beginPath(); ctx.moveTo(430, 150); ctx.lineTo(500, 60); ctx.lineTo(570, 150); ctx.fill();
 
-            // Modificado: luzes do portal piscam em vermelho quando o jogador pega algo negativo
             let piscarErro = tempoPiscarPortal > 0 && Math.floor(Date.now() / 100) % 2 === 0;
             let piscarBaixaQualidade = qualidade < 50 && Math.floor(Date.now() / 200) % 2 === 0;
             
@@ -81,7 +111,36 @@
         }
 
         function loop() {
-            if (pausado) return;
+            if (estadoJogo === "menu") {
+                ctx.fillStyle = "#1e272e";
+                ctx.fillRect(0, 0, 600, 450);
+
+                ctx.fillStyle = "#f1c40f"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center";
+                ctx.fillText("MISSÃO SUSTENTÁVEL - POMERODE", 300, 45);
+
+                ctx.fillStyle = "#e74c3c"; ctx.font = "bold 12px sans-serif";
+                ctx.fillText("⚠️ AVISO EXTREMAMENTE CLARO: TODOS OS DADOS E VALORES", 300, 80);
+                ctx.fillText("UTILIZADOS NESTE JOGO SÃO PURAMENTE DIDÁTICOS E ILUSTRATIVOS.", 300, 98);
+                ctx.fillText("NÃO POSSUEM NENHUMA BASE REAL OU CIENTÍFICA COMPROVADA.", 300, 116);
+
+                ctx.fillStyle = "white"; ctx.font = "14px sans-serif";
+                ctx.fillText("Escolha como você deseja ajudar o colono a gerenciar a cidade:", 300, 160);
+
+                // Botão Notebook
+                ctx.fillStyle = "#3498db";
+                ctx.fillRect(120, 250, 160, 60);
+                ctx.fillStyle = "white"; ctx.font = "bold 14px sans-serif";
+                ctx.fillText("💻 Computador", 200, 285);
+
+                // Botão Celular
+                ctx.fillStyle = "#2ecc71";
+                ctx.fillRect(320, 250, 160, 60);
+                ctx.fillStyle = "white";
+                ctx.fillText("📱 Celular (Toque)", 400, 285);
+                return;
+            }
+
+            if (pausado || estadoJogo === "fim") return;
             if (tempoPiscarPortal > 0) tempoPiscarPortal--;
 
             let fator = qualidade / 100;
@@ -101,9 +160,11 @@
 
             desenharPortal();
 
-            if(teclas["left"]) player.x -= player.speed;
-            if(teclas["right"]) player.x += player.speed;
-            player.x = Math.max(0, Math.min(560, player.x));
+            if (modoControle === "teclado") {
+                if(teclas["left"]) player.x -= player.speed;
+                if(teclas["right"]) player.x += player.speed;
+                player.x = Math.max(0, Math.min(560, player.x));
+            }
             
             // Boneco de Colono detalhado
             ctx.fillStyle = "#34495e";
@@ -147,7 +208,7 @@
                         qualidade = Math.max(0, qualidade - 10);
                         co2 += 0.8;
                         itensRuinsColetados++;
-                        tempoPiscarPortal = 30; // Ativa o aviso visual no portal por 1 segundo
+                        tempoPiscarPortal = 30;
                     }
                     objetos.splice(i, 1);
                     document.getElementById("txt-pontos").innerText = "Pontos: " + pontos;
@@ -170,10 +231,11 @@
         setInterval(loop, 30);
 
         const timerInterval = setInterval(() => {
-            if (tempo > 0 && !pausado) {
+            if (estadoJogo === "jogando" && tempo > 0 && !pausado) {
                 tempo--;
                 document.getElementById("txt-tempo").innerText = `Tempo: ${tempo}s`;
-            } else if (tempo <= 0 && !pausado) {
+            } else if (estadoJogo === "jogando" && tempo <= 0 && !pausado) {
+                estadoJogo = "fim";
                 clearInterval(timerInterval);
                 
                 if (pontos > recorde) {
@@ -181,7 +243,6 @@
                     localStorage.setItem("recordePomerode", recorde);
                 }
 
-                // Cálculo dos impactos didáticos com base nas coletas
                 let hospitaisAjudados = Math.max(1, Math.floor(itensBonsColetados * 0.8));
                 let policiaisAjudados = Math.max(1, Math.floor(itensBonsColetados * 1.2));
                 let escolasAjudadas = Math.max(1, Math.floor(itensBonsColetados * 1.0));
@@ -195,25 +256,24 @@
                 
                 ctx.fillStyle = "white"; ctx.font = "12px sans-serif";
                 ctx.fillText(`Pontuação Final: ${pontos} | Recorde: ${recorde}`, canvas.width / 2, 55);
-                ctx.fillText(`CO₂ Final: ${co2.toFixed(1)} kg (Equivalente a ${equivalenteChuveiro} minutos de banho no chuveiro elétrico)`, canvas.width / 2, 78);
+                ctx.fillText(`CO₂ Gerado: ${co2.toFixed(1)} kg (Equivalente a ${equivalenteChuveiro} min de chuveiro elétrico no máximo)`, canvas.width / 2, 78);
 
                 ctx.fillStyle = "#3498db"; ctx.font = "bold 13px sans-serif";
                 ctx.fillText("O quanto você ajudou a sua cidade a se manter de pé:", canvas.width / 2, 105);
 
                 ctx.fillStyle = "#ecf0f1"; ctx.font = "12px sans-serif";
-                ctx.fillText(`🏥 Hospitais beneficiados: ${hospitaisAjudados} unidades`, canvas.width / 2, 128);
-                ctx.fillText(`🏫 Escolas auxiliadas: ${escolasAjudadas} instituições`, canvas.width / 2, 148);
-                ctx.fillText(`👮 Policiais e Seguranças apoiados: ${policiaisAjudados} equipes`, canvas.width / 2, 168);
+                ctx.fillText(`🏥 Hospitais auxiliados: ${hospitaisAjudados} unidades`, canvas.width / 2, 128);
+                ctx.fillText(`🏫 Escolas beneficiadas: ${escolasAjudadas} instituições`, canvas.width / 2, 148);
+                ctx.fillText(`👮 Seguranças apoiados: ${policiaisAjudados} equipes`, canvas.width / 2, 168);
                 ctx.fillText(`✨ Itens positivos: ${itensBonsColetados} | ⚠️ Itens nocivos: ${itensRuinsColetados}`, canvas.width / 2, 188);
 
-                // Modificado: AVISO EXTREMAMENTE ESPECÍFICO E CLARO QUE OS DADOS SÃO PURAMENTE DIDÁTICOS
                 ctx.fillStyle = "#e74c3c"; ctx.font = "bold 11px sans-serif";
                 ctx.fillText("⚠️ AVISO EXTREMAMENTE CLARO: TODOS OS DADOS UTILIZADOS NESTE", canvas.width / 2, 222);
                 ctx.fillText("JOGO SÃO PURAMENTE DIDÁTICOS, ILUSTRATIVOS E FICTÍCIOS.", canvas.width / 2, 238);
                 ctx.fillText("NÃO POSSUEM NENHUM DADO REAL, CIENTÍFICO OU COMPROVADO.", canvas.width / 2, 254);
 
                 ctx.fillStyle = "#2ecc71"; ctx.font = "italic 11px sans-serif";
-                ctx.fillText("Continue praticando a sustentabilidade e ajude Pomerode!", canvas.width / 2, 290);
+                ctx.fillText("Você ajudou o colono a gerenciar e melhorar a cidade de Pomerode!", canvas.width / 2, 290);
 
                 ctx.fillStyle = "#bdc3c7"; ctx.font = "12px sans-serif";
                 ctx.fillText("Pressione F5 para iniciar uma nova partida.", canvas.width / 2, 330);
