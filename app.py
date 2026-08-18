@@ -4,166 +4,189 @@ import random
 
 st.set_page_config(page_title="Gestão de Energia: Pomerode", layout="centered")
 
-# Banco amplo com 15 perguntas diferentes sobre o cotidiano
-banco_perguntas_total = [
-    {
-        "id": 1,
-        "q": "Você acorda às 6h da manhã em um dia de inverno rigoroso em Pomerode. Como decide iniciar o aquecimento da casa?",
-        "opcoes": [
-            "Ativar o sistema de climatização em potência máxima em todos os cômodos.",
-            "Utilizar roupas térmicas de lã e aquecer apenas o ambiente de uso comum.",
-            "Abrir as janelas para a ventilação natural logo cedo, independentemente da temperatura."
-        ],
-        "pesos": [15.0, 5.0, 2.0]
-    },
-    {
-        "id": 2,
-        "q": "No final de semana, há uma grande quantidade de roupas para lavar. Qual é a sua escolha operacional?",
-        "opcoes": [
-            "Acionar a máquina de lavar roupas várias vezes com cargas parciais ao longo do dia.",
-            "Esperar acumular o volume máximo recomendado para realizar um único ciclo completo.",
-            "Lavar as roupas manualmente utilizando água quente em abundância."
-        ],
-        "pesos": [12.0, 4.0, 10.0]
-    },
-    {
-        "id": 3,
-        "q": "Durante o período noturno, como você gerencia a iluminação e os eletrônicos em sua residência?",
-        "opcoes": [
-            "Deixar lâmpadas e televisores ligados em cômodos vazios para manter o ambiente iluminado.",
-            "Desligar os aparelhos da tomada em stand-by e iluminar apenas os espaços ocupados.",
-            "Manter luzes decorativas externas acesas a noite inteira por segurança."
-        ],
-        "pesos": [9.0, 3.0, 8.0]
-    },
-    {
-        "id": 4,
-        "q": "No preparo das refeições diárias, qual prática você adota em relação aos eletrodomésticos?",
-        "opcoes": [
-            "Utilizar o forno elétrico e o micro-ondas simultaneamente sem planejamento prévio.",
-            "Planejar o uso do fogão e dos eletrodomésticos de forma otimizada para evitar picos.",
-            "Descongelar alimentos direto no micro-ondas por longos períodos em vez de antecipar o processo."
-        ],
-        "pesos": [11.0, 4.0, 7.0]
-    },
-    {
-        "id": 5,
-        "q": "Em relação à ventilação e refrigeração da casa nos dias quentes de verão, qual a sua decisão?",
-        "opcoes": [
-            "Manter o ar-condicionado ligado continuamente com portas e janelas abertas.",
-            "Aproveitar a circulação cruzada de ar abrindo janelas estrategicamente e usar ventiladores econômicos.",
-            "Deixar todos os ventiladores da casa girando no máximo mesmo sem ninguém no ambiente."
-        ],
-        "pesos": [14.0, 4.0, 8.0]
-    },
-    {
-        "id": 6,
-        "q": "Como você lida com o carregamento de dispositivos eletrônicos (celulares, notebooks) em casa?",
-        "opcoes": [
-            "Deixar os carregadores plugados na tomada permanentemente, mesmo sem aparelhos conectados.",
-            "Conectar os aparelhos apenas durante o tempo necessário para a carga completa e retirar da tomada.",
-            "Manter múltiplos dispositivos carregando simultaneamente durante toda a madrugada."
-        ],
-        "pesos": [5.0, 2.0, 8.0]
-    },
-    {
-        "id": 7,
-        "q": "No que diz respeito ao aquecimento de água para banho e uso doméstico, qual a sua conduta?",
-        "opcoes": [
-            "Optar por banhos longos com o chuveiro elétrico na potência máxima de temperatura.",
-            "Controlar o tempo do banho e utilizar o chuveiro em modo econômico/moderado.",
-            "Aquecer grandes volumes d'água excedentes por precaução sem necessidade real."
-        ],
-        "pesos": [16.0, 6.0, 9.0]
-    },
-    {
-        "id": 8,
-        "q": "Ao utilizar o ferro de passar roupas para o uniforme da semana, qual o procedimento adotado?",
-        "opcoes": [
-            "Ligar o ferro e passar cada peça separadamente ao longo da semana à medida que for usar.",
-            "Acumular as peças e passar todas de uma só vez de forma organizada e contínua.",
-            "Deixar o ferro ligado na tomada enquanto realiza outras tarefas domésticas demoradas."
-        ],
-        "pesos": [13.0, 4.0, 15.0]
-    },
-    {
-        "id": 9,
-        "q": "Como você gerencia o uso da geladeira e do freezer na sua rotina de armazenamento de alimentos?",
-        "opcoes": [
-            "Deixar a porta da geladeira aberta por tempo prolongado escolhendo o que vai consumir.",
-            "Verificar rapidamente o que deseja antes de abrir, mantendo o tempo de abertura mínimo.",
-            "Guardar alimentos ainda quentes diretamente no interior do refrigerador."
-        ],
-        "pesos": [10.0, 3.0, 11.0]
-    },
-    {
-        "id": 10,
-        "q": "Para a iluminação de áreas de estudo ou trabalho em casa durante o dia, qual sua escolha?",
-        "opcoes": [
-            "Manter as cortinas fechadas e acender todas as lâmpadas do teto e abajures.",
-            "Aproveitar ao máximo a luz solar natural abrindo cortinas e janelas.",
-            "Utilizar refletores de alta potência mesmo com boa claridade natural disponível."
-        ],
-        "pesos": [8.0, 2.0, 14.0]
-    },
-    {
-        "id": 11,
-        "q": "Em um dia ensolarado de primavera em Pomerode, como você decide secar as roupas lavadas?",
-        "opcoes": [
-            "Utilizar a secadora elétrica em ciclo completo independentemente do clima.",
-            "Estender as roupas ao ar livre no varal aproveitando a energia solar e o vento natural.",
-            "Utilizar o modo aquecido do ar-condicionado direcionado para as peças em um quarto fechado."
-        ],
-        "pesos": [14.0, 2.0, 12.0]
-    },
-    {
-        "id": 12,
-        "q": "Como você procede com os equipamentos de entretenimento (videogames, caixas de som, TVs) ao sair para a escola?",
-        "opcoes": [
-            "Deixar todos os aparelhos em modo de espera (stand-by) prontos para uso imediato.",
-            "Desligar completamente os aparelhos do estabilizador ou da tomada.",
-            "Manter sistemas de som conectados à rede elétrica sem reproduzir áudio."
-        ],
-        "pesos": [7.0, 2.0, 6.0]
-    },
-    {
-        "id": 13,
-        "q": "Na hora de ventilar a casa após a limpeza diária, qual método você prioriza?",
-        "opcoes": [
-            "Acionar exaustores elétricos e ventiladores simultaneamente com as portas fechadas.",
-            "Promover a ventilação natural cruzada abrindo portas opostas da residência.",
-            "Deixar ventiladores portáteis ligados nos cantos dos cômodos sem circulação externa."
-        ],
-        "pesos": [9.0, 3.0, 8.0]
-    },
-    {
-        "id": 14,
-        "q": "Como você escolhe o método de iluminação para corredores e áreas de circulação à noite?",
-        "opcoes": [
-            "Manter lâmpadas principais acesas em todos os corredores da casa por precaução.",
-            "Utilizar iluminação pontual de baixa potência apenas nos locais de passagem imediata.",
-            "Deixar luminárias de alto consumo acesas nos andares superiores sem circulação."
-        ],
-        "pesos": [8.0, 2.0, 11.0]
-    },
-    {
-        "id": 15,
-        "q": "Ao planejar o uso de computadores e notebooks para tarefas escolares, qual sua conduta energética?",
-        "opcoes": [
-            "Deixar o computador ligado com o monitor em brilho máximo durante longas pausas e intervalos.",
-            "Configurar o modo de economia de energia e desligar o monitor nos momentos de ausência.",
-            "Manter atualizações pesadas rodando em segundo plano durante o horário de pico de consumo."
-        ],
-        "pesos": [10.0, 3.0, 12.0]
-    }
-]
+# Banco de 15 perguntas divididas internamente em níveis (Fácil, Média, Reflexiva, Complexa, Hard)
+# sem mostrar nenhum rótulo para o usuário.
+banco_niveis = {
+    "facil": [
+        {
+            "id": 1,
+            "q": "Ao sair para a escola em uma manhã ensolarada em Pomerode, qual a atitude mais adequada com as luzes dos cômodos vazios?",
+            "opcoes": [
+                "Deixar as lâmpadas acesas para que a casa não fique totalmente escura.",
+                "Desligar todas as luzes dos cômodos que não estão sendo ocupados.",
+                "Manter apenas a luz da sala ligada por segurança."
+            ],
+            "pesos": [8.0, 2.0, 6.0]
+        },
+        {
+            "id": 2,
+            "q": "No dia a dia, como você costuma carregar o seu celular em casa?",
+            "opcoes": [
+                "Deixar o carregador plugado na tomada o dia todo, mesmo sem o celular conectado.",
+                "Conectar o aparelho apenas pelo tempo necessário e retirar o carregador da tomada.",
+                "Colocar para carregar apenas quando for dormir e deixar a noite inteira."
+            ],
+            "pesos": [5.0, 2.0, 7.0]
+        },
+        {
+            "id": 3,
+            "q": "Para ventilar um quarto numa tarde quente de verão, qual opção você escolhe?",
+            "opcoes": [
+                "Ligar o ventilador no máximo e fechar totalmente as cortinas e janelas.",
+                "Abrir a janela para aproveitar a circulação natural do ar e usar o ventilador de forma moderada.",
+                "Deixar o ar-condicionado e o ventilador ligados ao mesmo tempo."
+            ],
+            "pesos": [9.0, 3.0, 14.0]
+        }
+    ],
+    "media": [
+        {
+            "id": 4,
+            "q": "No final de semana, há uma quantidade moderada de roupas acumuladas para lavar. O que você faz?",
+            "opcoes": [
+                "Ligar a máquina de lavar várias vezes ao longo do dia com pouca roupa.",
+                "Esperar juntar a carga completa recomendada pelo fabricante para fazer um único ciclo.",
+                "Lavar à mão utilizando água quente em grande volume."
+            ],
+            "pesos": [12.0, 4.0, 10.0]
+        },
+        {
+            "id": 5,
+            "q": "Como você gerencia a abertura da geladeira na hora de preparar um lanche rápido?",
+            "opcoes": [
+                "Deixar a porta aberta por vários segundos enquanto decide o que vai pegar.",
+                "Verificar rapidamente o que deseja antes de abrir, mantendo o tempo de abertura mínimo.",
+                "Guardar alimentos ainda quentes diretamente nas prateleiras internas."
+            ],
+            "pesos": [10.0, 3.0, 11.0]
+        },
+        {
+            "id": 6,
+            "q": "Para realizar as tarefas escolares no computador durante a tarde, qual a sua escolha de iluminação?",
+            "opcoes": [
+                "Manter as cortinas fechadas e acender todas as luminárias do teto.",
+                "Aproveitar ao máximo a luz solar natural posicionando a mesa perto da janela.",
+                "Utilizar lâmpadas de alta potência mesmo com boa claridade natural."
+            ],
+            "pesos": [8.0, 2.0, 13.0]
+        }
+    ],
+    "reflexiva": [
+        {
+            "id": 7,
+            "q": "Em um dia frio de inverno em Pomerode, qual a melhor forma de iniciar o aquecimento do ambiente de convivência?",
+            "opcoes": [
+                "Ativar o sistema de climatização em potência máxima em todos os cômodos da casa.",
+                "Utilizar roupas térmicas adequadas e aquecer de forma concentrada apenas o espaço de uso comum.",
+                "Abrir as janelas de manhã cedo para renovar o ar, ignorando o frio externo."
+            ],
+            "pesos": [15.0, 5.0, 3.0]
+        },
+        {
+            "id": 8,
+            "q": "Ao utilizar o ferro elétrico para passar o uniforme da semana, qual rotina otimiza o consumo?",
+            "opcoes": [
+                "Ligar o ferro e passar cada peça separadamente nos dias em que for usar.",
+                "Acumular as peças e passar todas de uma só vez em um fluxo contínuo e organizado.",
+                "Deixar o ferro ligado na tomada enquanto faz outras pausas longas pela casa."
+            ],
+            "pesos": [13.0, 4.0, 16.0]
+        },
+        {
+            "id": 9,
+            "q": "Como proceder com os aparelhos de entretenimento (videogame, TV, som) ao sair para passar o dia fora?",
+            "opcoes": [
+                "Deixar todos em modo de espera (stand-by) para ligarem mais rápido na volta.",
+                "Desligar completamente os aparelhos da tomada ou do filtro de linha.",
+                "Manter caixas de som conectadas à rede elétrica sem reproduzir áudio."
+            ],
+            "pesos": [7.0, 2.0, 6.0]
+        }
+    ],
+    "complexa": [
+        {
+            "id": 10,
+            "q": "No preparo das refeições principais da família, como você planeja o uso simultâneo de eletrodomésticos de alto consumo?",
+            "opcoes": [
+                "Utilizar o forno elétrico e o micro-ondas ao mesmo tempo sem planejamento prévio de carga.",
+                "Organizar os horários de preparo para evitar picos excessivos na rede elétrica.",
+                "Descongelar alimentos direto no micro-ondas por ciclos longos repetidos."
+            ],
+            "pesos": [14.0, 4.0, 9.0]
+        },
+        {
+            "id": 11,
+            "q": "Em um dia ensolarado e seco de primavera na região, qual o método ideal para secar as roupas recém-lavadas?",
+            "opcoes": [
+                "Utilizar a secadora elétrica em ciclo completo por comodidade.",
+                "Estender as peças ao ar livre no varal, aproveitando a energia solar e o vento natural.",
+                "Utilizar o modo aquecido do ar-condicionado direcionado para as roupas em um cômodo fechado."
+            ],
+            "pesos": [14.0, 2.0, 12.0]
+        },
+        {
+            "id": 12,
+            "q": "Como você escolhe a iluminação para corredores e áreas de circulação interna durante a noite?",
+            "opcoes": [
+                "Manter lâmpadas principais de teto acesas em todos os corredores por precaução.",
+                "Utilizar balizamento ou iluminação pontual de baixa potência apenas nos locais de passagem.",
+                "Deixar luminárias decorativas de alto consumo acesas nos andares superiores sem uso."
+            ],
+            "pesos": [9.0, 2.0, 11.0]
+        }
+    ],
+    "hard": [
+        {
+            "id": 13,
+            "q": "Considerando o perfil climático de Pomerode e a eficiência energética residencial, qual conduta reflete melhor um planejamento sustentável de longo prazo?",
+            "opcoes": [
+                "Priorizar materiais construtivos e isolamento térmico passivo, reduzindo a dependência de climatizadores artificiais.",
+                "Manter sistemas de refrigeração e aquecimento ligados ininterruptamente para estabilizar a temperatura interna exata.",
+                "Substituir toda a ventilação natural por exaustores mecânicos automatizados contínuos."
+            ],
+            "pesos": [2.0, 16.0, 12.0]
+        },
+        {
+            "id": 14,
+            "q": "Ao avaliar o impacto indireto de atualizações pesadas de softwares em computadores durante horários de pico, qual decisão minimiza a sobrecarga na matriz?",
+            "opcoes": [
+                "Programar downloads e processos intensivos para períodos de menor demanda energética na rede.",
+                "Deixar atualizações automáticas rodando em segundo plano durante o horário de pico comercial.",
+                "Manter o computador com o monitor em brilho máximo durante longas ausências."
+            ],
+            "pesos": [3.0, 12.0, 10.0]
+        },
+        {
+            "id": 15,
+            "q": "No contexto de uma comunidade urbana sustentável, qual é a métrica mais crítica para equilibrar a microgeração eólica local com o consumo residencial?",
+            "opcoes": [
+                "Sincronizar os hábitos de alto gasto com os picos reais de geração e armazenamento em bateria, evitando o déficit.",
+                "Desconsiderar a capacidade da bateria e focar apenas no conforto imediato individual.",
+                "Aumentar o consumo base fixo para forçar a concessionária a expandir a rede."
+            ],
+            "pesos": [4.0, 15.0, 11.0]
+        }
+    ]
+}
 
-# Inicialização e Sorteio Randômico Exclusivo por Sessão
+# Inicialização e Sorteio Garantindo 1 Pergunta de Cada Nível (Total de 5, sem repetir)
 if "etapa" not in st.session_state:
     st.session_state.etapa = "questionario"
     st.session_state.consumo_questionario = 0.0
     st.session_state.producao = 25.0
-    st.session_state.perguntas_jogo = random.sample(banco_perguntas_total, 5)
+    
+    # Sorteia exatamente uma de cada categoria para garantir diversidade e níveis ocultos
+    perguntas_sorteadas = [
+        random.choice(banco_niveis["facil"]),
+        random.choice(banco_niveis["media"]),
+        random.choice(banco_niveis["reflexiva"]),
+        random.choice(banco_niveis["complexa"]),
+        random.choice(banco_niveis["hard"])
+    ]
+    # Embaralha a ordem para que o nível não siga uma sequência previsível
+    random.shuffle(perguntas_sorteadas)
+    
+    st.session_state.perguntas_jogo = perguntas_sorteadas
     st.session_state.indice_pergunta = 0
 
 # --- ETAPA 1: QUESTIONÁRIO DINÂMICO E ÀS CEGAS ---
@@ -173,12 +196,12 @@ if st.session_state.etapa == "questionario":
     
     st.title("⚡ Etapa 1: Diagnóstico de Consumo Cotidiano")
     st.progress((idx) / total_p)
-    st.write(f"**Situação {idx + 1} de {total_p} (Perguntas Sorteadas Exclusivas):**")
+    st.write(f"**Situação {idx + 1} de {total_p} (Análise Estratégica):**")
     
     pergunta_atual = st.session_state.perguntas_jogo[idx]
     st.info(pergunta_atual["q"])
     
-    st.write("*(Nota: Escolha com base no seu bom senso. O impacto energético é computado de forma oculta pelo sistema).*")
+    st.write("*(Nota: Escolha com base no seu bom senso. O impacto energético é computado de forma oculta).*")
     
     escolha = st.radio("Selecione a sua decisão:", pergunta_atual["opcoes"], key=f"pergunta_dinamica_{idx}")
     
@@ -202,7 +225,7 @@ elif st.session_state.etapa == "minijogo":
     try:
         with open("minijogo.html", "r", encoding="utf-8") as f:
             html_content = f.read()
-        components.html(html_content, height=650, scrolling=False)
+        components.html(html_content, height=680, scrolling=False)
     except FileNotFoundError:
         st.error("⚠️ O arquivo 'minijogo.html' não foi encontrado. Verifique se o nome está exato no GitHub.")
 
@@ -221,10 +244,10 @@ elif st.session_state.etapa == "resultado":
     
     st.write(f"**Energia Produzida (Eólica):** {st.session_state.producao} kWh")
     st.write(f"**Energia Armazenada (Bateria):** {armazenamento_bateria} kWh")
-    st.write(f"**Energia Consumida Total (Decisões):** {consumo_total:.1f} kWh")
+    st.write(f"**Energia Consumida Total (Decisões + Jogo):** {consumo_total:.1f} kWh")
     st.write(f"### Saldo Energético Final: {saldo:.1f} kWh")
     
-    st.warning("⚠️ **Nota Metodológica:** Os valores utilizados no sistema são modelos didáticos simplificados para representar o fluxo energético.")
+    st.warning("⚠️ **Nota Metodológica:** Os valores utilizados no sistema integram o diagnóstico comportamental com o desempenho urbano na simulação.")
     
     if saldo > 15:
         st.success("Resultado: Excedente Energético (Cidade altamente sustentável e equilibrada!)")
