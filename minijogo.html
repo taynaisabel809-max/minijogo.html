@@ -48,7 +48,7 @@
 </head>
 <body>
 
-    <div id="aviso-alerta">⚠️ ATENÇÃO: Desvie dos emojis com luz vermelha ao redor (eles prejudicam a cidade de Pomerode)!</div>
+    <div id="aviso-alerta">⚠️ ATENÇÃO: Desvie dos emojis com luz vermelha ao redor e utilize o portal energético!</div>
     <div id="hud">
         <span id="txt-tempo">Tempo: 120s</span>
         <span id="txt-pontos">Pontos: 0</span>
@@ -65,17 +65,25 @@
         let pontos = 0;
         let co2 = 12.5;
 
-        // Jogador (colono com cabelo detalhado, chapéu e braços)
+        // Jogador (Colono detalhado com cabeça, rosto, cabelo, braços e pernas)
         let player = {
             x: 270,
-            y: 380,
-            w: 60,
-            h: 50,
+            y: 375,
+            w: 45,
+            h: 60,
             speed: 6,
             dx: 0
         };
 
-        // Lista de Emojis (Bons e Ruins com luz vermelha)
+        // Portal Energético de Pomerode
+        let portal = {
+            x: Math.random() * 500 + 50,
+            y: 220,
+            w: 50,
+            h: 50,
+            ativo: true
+        };
+
         const itensConfig = [
             // Bons
             { emoji: "🌳", tipo: "bom", pts: 10, co2Change: -1.5, r: 18 },
@@ -105,7 +113,6 @@
             });
         }
 
-        // Controles do Teclado
         window.addEventListener("keydown", (e) => {
             if (e.key === "ArrowLeft" || e.key === "a") player.dx = -player.speed;
             if (e.key === "ArrowRight" || e.key === "d") player.dx = player.speed;
@@ -121,12 +128,28 @@
             if (player.x < 0) player.x = 0;
             if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
 
-            // Atualiza objetos
+            // Interação com o Portal Energético
+            if (portal.ativo) {
+                let pDistX = (player.x + player.w/2) - (portal.x + portal.w/2);
+                let pDistY = (player.y + player.h/2) - (portal.y + portal.h/2);
+                if (Math.sqrt(pDistX * pDistX + pDistY * pDistY) < 40) {
+                    pontos += 30; // Bônus do portal
+                    co2 -= 3.0;
+                    if (co2 < 0) co2 = 0;
+                    portal.ativo = false;
+                    // Reposiciona o portal após alguns segundos
+                    setTimeout(() => {
+                        portal.x = Math.random() * 500 + 50;
+                        portal.ativo = true;
+                    }, 7000);
+                }
+            }
+
+            // Atualiza objetos que caem
             for (let i = objetos.length - 1; i >= 0; i--) {
                 let obj = objetos[i];
                 obj.y += obj.speed;
 
-                // Colisão com o jogador
                 let distX = (player.x + player.w/2) - obj.x;
                 let distY = (player.y + player.h/2) - obj.y;
                 let distancia = Math.sqrt(distX * distX + distY * distY);
@@ -142,31 +165,35 @@
             }
         }
 
-        function desenharBoneco() {
-            // Corpo / Roupa
+        function desenharBonecoReal() {
+            // Pernas
+            ctx.fillStyle = "#34495e";
+            ctx.fillRect(player.x + 8, player.y + 45, 8, 15);
+            ctx.fillRect(player.x + 24, player.y + 45, 8, 15);
+
+            // Tronco / Roupa de Colono
             ctx.fillStyle = "#27ae60";
-            ctx.fillRect(player.x + 15, player.y + 20, 30, 25);
+            ctx.fillRect(player.x + 5, player.y + 20, 30, 25);
 
             // Braços
             ctx.fillStyle = "#d35400";
-            ctx.fillRect(player.x + 5, player.y + 22, 10, 8);
-            ctx.fillRect(player.x + 45, player.y + 22, 10, 8);
+            ctx.fillRect(player.x - 3, player.y + 22, 8, 15);
+            ctx.fillRect(player.x + 35, player.y + 22, 8, 15);
 
-            // Cabeça
+            // Cabeça (Pele)
             ctx.fillStyle = "#f39c12";
             ctx.beginPath();
-            ctx.arc(player.x + 30, player.y + 12, 12, 0, Math.PI * 2);
+            ctx.arc(player.x + 20, player.y + 10, 10, 0, Math.PI * 2);
             ctx.fill();
 
             // Cabelo detalhado
             ctx.fillStyle = "#4a2511";
-            ctx.fillRect(player.x + 20, player.y + 2, 20, 5);
-            ctx.fillRect(player.x + 18, player.y + 5, 6, 6);
+            ctx.fillRect(player.x + 12, player.y + 1, 16, 5);
 
             // Chapéu típico de colono
             ctx.fillStyle = "#e67e22";
-            ctx.fillRect(player.x + 10, player.y - 2, 40, 5);
-            ctx.fillRect(player.x + 20, player.y - 10, 20, 8);
+            ctx.fillRect(player.x + 5, player.y - 3, 30, 4);
+            ctx.fillRect(player.x + 12, player.y - 9, 16, 6);
         }
 
         function desenhar() {
@@ -176,13 +203,31 @@
             ctx.fillStyle = "#2ecc71";
             ctx.fillRect(0, canvas.height - 15, canvas.width, 15);
 
-            // Desenhar Jogador
-            desenharBoneco();
+            // Desenhar Portal Energético se estiver ativo
+            if (portal.ativo) {
+                ctx.save();
+                ctx.shadowColor = "#00ffff";
+                ctx.shadowBlur = 20;
+                ctx.strokeStyle = "#00ffff";
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(portal.x + portal.w/2, portal.y + portal.h/2, 25, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.fillStyle = "rgba(0, 255, 255, 0.3)";
+                ctx.fill();
+                ctx.font = "20px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("🌀", portal.x + portal.w/2, portal.y + portal.h/2);
+                ctx.restore();
+            }
 
-            // Desenhar Objetos
+            // Desenhar Jogador Real
+            desenharBonecoReal();
+
+            // Desenhar Emojis
             for (let obj of objetos) {
                 ctx.save();
-                // Se for item ruim, desenha luz vermelha pulsante ao redor
                 if (obj.tipo === "ruim") {
                     ctx.shadowColor = "red";
                     ctx.shadowBlur = 15;
@@ -206,10 +251,8 @@
             }
         }
 
-        // Intervalo de criação de itens
         setInterval(criarObjeto, 900);
 
-        // Cronômetro de 120 segundos
         const timerInterval = setInterval(() => {
             if (tempoRestante > 0) {
                 tempoRestante--;
