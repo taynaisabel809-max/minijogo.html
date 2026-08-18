@@ -2,552 +2,234 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Missão Sustentável - Pomerode</title>
     <style>
-        * {
-            box-sizing: border-box;
+        body {
             margin: 0;
             padding: 0;
-            user-select: none;
+            background: #eef2f3;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #121212;
-            color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
             overflow: hidden;
         }
-
-        #game-container {
-            position: relative;
-            width: 800px;
-            height: 600px;
-            background: linear-gradient(to bottom, #1a2a40 0%, #355c7d 60%, #4a7c59 100%);
-            overflow: hidden;
-            border: 4px solid #333;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        #game-container.sky-clean {
-            background: linear-gradient(to bottom, #0f2027 0%, #203a43 50%, #2c5364 80%, #4a7c59 100%);
-        }
-
-        #game-container.sky-polluted {
-            background: linear-gradient(to bottom, #3a3a3a 0%, #4f5b66 50%, #5c6b73 80%, #3b4d3a 100%);
-        }
-
-        .mountain {
-            position: absolute;
-            bottom: 120px;
-            width: 100%;
-            height: 150px;
-            background: #2d4a3e;
-            clip-path: polygon(0% 100%, 15% 40%, 30% 80%, 55% 20%, 75% 70%, 90% 35%, 100% 100%);
-            z-index: 1;
-            opacity: 0.8;
-        }
-
-        .moon {
-            position: absolute;
-            top: 30px;
-            right: 50px;
-            width: 50px;
-            height: 50px;
-            background: #fdf5e6;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(253, 245, 230, 0.6);
-            z-index: 1;
-        }
-
-        .portal-pomerode-real {
-            position: absolute;
-            bottom: 120px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 450px;
-            height: 250px;
-            z-index: 4;
-            pointer-events: none;
-        }
-
-        .portal-base {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 160px;
-            background: #d4a373;
-            border: 4px solid #3b2314;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .portal-tower-left, .portal-tower-right {
-            position: absolute;
-            bottom: 0;
-            width: 130px;
-            height: 240px;
-            background: #d4a373;
-            border: 4px solid #3b2314;
-        }
-        .portal-tower-left { left: 0; }
-        .portal-tower-right { right: 0; }
-
-        .conical-roof {
-            position: absolute;
-            top: -85px;
-            left: -10px;
-            width: 142px;
-            height: 90px;
-            background: #4a1500;
-            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-            border-top: 3px solid #ffcc00;
-        }
-
-        .christmas-lights-roof {
-            position: absolute;
-            top: -75px;
-            left: 10px;
-            width: 120px;
-            height: 75px;
-            background-image: radial-gradient(#fff 40%, #ffeb3b 60%, transparent 70%);
-            background-size: 14px 14px;
-            transition: opacity 0.3s;
-        }
-        .christmas-lights-roof.off { opacity: 0.1; }
-
-        .portal-arch-left, .portal-arch-right {
-            position: absolute;
-            bottom: 0;
-            width: 100px;
-            height: 110px;
-            background: #111;
-            border: 5px solid #3b2314;
-            border-bottom: none;
-            border-radius: 50px 50px 0 0;
-        }
-        .portal-arch-left { left: 15px; }
-        .portal-arch-right { right: 15px; }
-
-        .portal-center-body {
-            position: absolute;
-            bottom: 80px;
-            left: 130px;
-            width: 190px;
-            height: 80px;
-            background: #fdf5e6;
-            border-top: 4px solid #3b2314;
-            border-bottom: 4px solid #3b2314;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .portal-sign-text {
-            font-size: 11px;
-            font-weight: bold;
-            color: #3b2314;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .ground {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 120px;
-            background: linear-gradient(to bottom, #3b5323 0%, #1e2b12 100%);
-            z-index: 10;
-            border-top: 4px solid #141d0c;
-        }
-
-        #player {
-            position: absolute;
-            bottom: 15px;
-            left: 360px;
-            width: 50px;
-            height: 95px;
-            z-index: 20;
-            transition: left 0.05s linear;
-        }
-
-        .colono-hat {
-            position: absolute;
-            top: -2px;
-            left: 2px;
-            width: 46px;
-            height: 12px;
-            background: #d4a373;
-            border-radius: 6px 6px 0 0;
-            border: 2px solid #333;
-            z-index: 5;
-        }
-
-        .colono-hat-brim {
-            position: absolute;
-            top: 8px;
-            left: -3px;
-            width: 56px;
-            height: 4px;
-            background: #bc6c25;
-            border: 1px solid #333;
-            border-radius: 2px;
-            z-index: 5;
-        }
-
-        .colono-head {
-            position: absolute;
-            top: 12px;
-            left: 10px;
-            width: 30px;
-            height: 28px;
-            background: #ffe0bd;
-            border-radius: 50%;
-            border: 2px solid #333;
-        }
-
-        .eye {
-            position: absolute;
-            top: 9px;
-            width: 4px;
-            height: 5px;
-            background: #222;
-            border-radius: 50%;
-        }
-        .eye.left { left: 7px; }
-        .eye.right { right: 7px; }
-
-        .smile {
-            position: absolute;
-            bottom: 6px;
-            left: 9px;
-            width: 10px;
-            height: 5px;
-            border-bottom: 2px solid #222;
-            border-radius: 0 0 6px 6px;
-        }
-
-        .colono-body {
-            position: absolute;
-            top: 40px;
-            left: 8px;
-            width: 34px;
-            height: 35px;
-            background: #2b4c7e;
-            border-radius: 6px 6px 0 0;
-            border: 2px solid #333;
-        }
-
-        .legs {
-            position: absolute;
-            bottom: 0;
-            left: 11px;
-            width: 28px;
-            height: 20px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .leg {
-            width: 11px;
-            height: 14px;
-            background: #1d3557;
-            border: 2px solid #333;
-            border-bottom: none;
-        }
-
-        .boot {
-            position: absolute;
-            bottom: 0;
-            width: 13px;
-            height: 8px;
-            background: #2b1d0c;
-            border: 2px solid #333;
-        }
-        .boot.left { left: 9px; }
-        .boot.right { right: 9px; }
-
         #hud {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            right: 12px;
             display: flex;
-            justify-content: space-between;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px 15px;
-            border-radius: 8px;
-            z-index: 100;
-            font-size: 13px;
-            font-weight: bold;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .hud-item span { color: #ffeb3b; }
-
-        .falling-item {
-            position: absolute;
-            width: 44px;
-            height: 44px;
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 25;
-        }
-
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
+            justify-content: space-around;
             width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .screen h1 { font-size: 26px; color: #ffeb3b; margin-bottom: 8px; }
-        .screen p { font-size: 13px; max-width: 600px; margin-bottom: 12px; color: #ddd; line-height: 1.4; }
-
-        .btn {
-            background: #4CAF50;
+            max-width: 600px;
+            background: #2c3e50;
             color: white;
-            border: none;
-            padding: 10px 22px;
-            font-size: 15px;
+            padding: 10px;
+            font-size: 14px;
             font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-
-        .hidden { display: none !important; }
+        #aviso-alerta {
+            background: #e74c3c;
+            color: white;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            font-size: 12px;
+            padding: 4px;
+            font-weight: bold;
+        }
+        canvas {
+            background: linear-gradient(to bottom, #87CEEB, #e0f6ff);
+            display: block;
+            margin-top: 5px;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
 
-    <div id="game-container" class="sky-clean">
-        <div class="moon"></div>
-        <div class="mountain"></div>
-
-        <div class="portal-pomerode-real">
-            <div class="portal-tower-left">
-                <div class="conical-roof"><div class="christmas-lights-roof" id="lights-roof-left"></div></div>
-            </div>
-            <div class="portal-tower-right">
-                <div class="conical-roof"><div class="christmas-lights-roof" id="lights-roof-right"></div></div>
-            </div>
-            <div class="portal-base">
-                <div class="portal-arch-left"></div>
-                <div class="portal-arch-right"></div>
-            </div>
-            <div class="portal-center-body">
-                <div class="portal-sign-text">Pomerode</div>
-            </div>
-        </div>
-
-        <div class="ground">
-            <div style="position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); width: 220px; display: flex; justify-content: space-around; font-size: 22px;">
-                <span>🌼</span><span>🌺</span><span>🌷</span><span>🌻</span><span>🌹</span>
-            </div>
-        </div>
-
-        <div id="player">
-            <div class="colono-hat"></div>
-            <div class="colono-hat-brim"></div>
-            <div class="colono-head">
-                <div class="eye left"></div>
-                <div class="eye right"></div>
-                <div class="smile"></div>
-            </div>
-            <div class="colono-body"></div>
-            <div class="legs"><div class="leg"></div><div class="leg"></div></div>
-            <div class="boot left"></div><div class="boot right"></div>
-        </div>
-
-        <div id="hud">
-            <div class="hud-item">Tempo: <span id="time-left">120</span>s</div>
-            <div class="hud-item">CO₂: <span id="co2-display">0.0</span> kg</div>
-            <div class="hud-item">Pontos: <span id="score">0</span></div>
-            <div class="hud-item">Recorde: <span id="high-score">0</span></div>
-        </div>
-
-        <div id="start-screen" class="screen">
-            <h1>Missão Sustentável: Pomerode (2 Minutos)</h1>
-            <p>Use as setas (ou A/D) para mover o colono. Colete energia limpa e itens de apoio comunitário para bater o recorde da turma e manter a cidade sustentável!</p>
-            <button class="btn" id="start-btn">Iniciar Desafio de 2 Minutos</button>
-        </div>
-
-        <div id="game-over-screen" class="screen hidden">
-            <h1>Fim de Jogo - Relatório de Impacto Social</h1>
-            <p id="final-stats" style="text-align: left; background: rgba(255,255,255,0.08); padding: 12px; border-radius: 6px;"></p>
-            <button class="btn" onclick="location.reload()">Jogar Novamente (Tentar Recorde)</button>
-        </div>
+    <div id="aviso-alerta">⚠️ ATENÇÃO: Desvie dos emojis com luz vermelha ao redor (eles prejudicam a cidade de Pomerode)!</div>
+    <div id="hud">
+        <span id="txt-tempo">Tempo: 120s</span>
+        <span id="txt-pontos">Pontos: 0</span>
+        <span id="txt-co2">CO₂: 12.5 kg</span>
     </div>
 
+    <canvas id="gameCanvas" width="600" height="450"></canvas>
+
     <script>
-        const player = document.getElementById('player');
-        const container = document.getElementById('game-container');
-        const scoreEl = document.getElementById('score');
-        const highScoreEl = document.getElementById('high-score');
-        const co2El = document.getElementById('co2-display');
-        const timeEl = document.getElementById('time-left');
-        
-        let playerX = 360;
-        let score = 0;
-        let highScore = localStorage.getItem('pomerode_highscore_2min') || 0;
-        highScoreEl.innerText = highScore;
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-        let co2 = 0.0;
-        let timeLeft = 120; // 2 minutos cronometrados
-        let gameActive = false;
-        let keys = {};
+        let tempoRestante = 120;
+        let pontos = 0;
+        let co2 = 12.5;
 
-        // Emojis variados representando energia limpa, eficiência e serviços comunitários ajudados
-        const itemsData = [
-            { emoji: '💨', type: 'good', points: 10, co2: -2.0, desc: 'Energia Eólica' },
-            { emoji: '💡', type: 'good', points: 15, co2: -3.0, desc: 'Iluminação Eficiente' },
-            { emoji: '🏥', type: 'good', points: 25, co2: -5.0, desc: 'Hospital Municipal' },
-            { emoji: '🏫', type: 'good', points: 20, co2: -4.0, desc: 'Escolas Públicas' },
-            { emoji: '🚓', type: 'good', points: 20, co2: -4.0, desc: 'Segurança / Policiamento' },
-            { emoji: '🌳', type: 'good', points: 15, co2: -4.0, desc: 'Área Verde Urbana' },
-            { emoji: '🚗', type: 'bad', points: -10, co2: 6.0, desc: 'Tráfego Poluente' },
-            { emoji: '🏭', type: 'bad', points: -20, co2: 12.0, desc: 'Emissões Industriais' }
+        // Jogador (colono com cabelo detalhado, chapéu e braços)
+        let player = {
+            x: 270,
+            y: 380,
+            w: 60,
+            h: 50,
+            speed: 6,
+            dx: 0
+        };
+
+        // Lista de Emojis (Bons e Ruins com luz vermelha)
+        const itensConfig = [
+            // Bons
+            { emoji: "🌳", tipo: "bom", pts: 10, co2Change: -1.5, r: 18 },
+            { emoji: "⚡", tipo: "bom", pts: 15, co2Change: -2.0, r: 18 },
+            { emoji: "🏫", tipo: "bom", pts: 20, co2Change: -2.5, r: 18 },
+            { emoji: "🚲", tipo: "bom", pts: 12, co2Change: -1.0, r: 18 },
+            // Ruins (Com luz vermelha)
+            { emoji: "🏭", tipo: "ruim", pts: -15, co2Change: 4.5, r: 18 },
+            { emoji: "🚗", tipo: "ruim", pts: -10, co2Change: 3.0, r: 18 },
+            { emoji: "🗑️", tipo: "ruim", pts: -10, co2Change: 2.5, r: 18 }
         ];
 
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
+        let objetos = [];
 
-        document.getElementById('start-btn').addEventListener('click', () => {
-            document.getElementById('start-screen').classList.add('hidden');
-            gameActive = true;
-            startGameLoop();
+        function criarObjeto() {
+            if (tempoRestante <= 0) return;
+            const config = itensConfig[Math.floor(Math.random() * itensConfig.length)];
+            objetos.push({
+                x: Math.random() * (canvas.width - 40) + 20,
+                y: -30,
+                speed: Math.random() * 2 + 2.5,
+                emoji: config.emoji,
+                tipo: config.tipo,
+                pts: config.pts,
+                co2Change: config.co2Change,
+                r: config.r
+            });
+        }
+
+        // Controles do Teclado
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" || e.key === "a") player.dx = -player.speed;
+            if (e.key === "ArrowRight" || e.key === "d") player.dx = player.speed;
         });
 
-        function updatePlayer() {
-            if (!gameActive) return;
-            if (keys['ArrowLeft'] || keys['a']) playerX -= 9;
-            if (keys['ArrowRight'] || keys['d']) playerX += 9;
-            
-            if (playerX < 0) playerX = 0;
-            if (playerX > 750) playerX = 750;
-            
-            player.style.left = playerX + 'px';
-            requestAnimationFrame(updatePlayer);
-        }
+        window.addEventListener("keyup", (e) => {
+            if ((e.key === "ArrowLeft" || e.key === "a") && player.dx < 0) player.dx = 0;
+            if ((e.key === "ArrowRight" || e.key === "d") && player.dx > 0) player.dx = 0;
+        });
 
-        function spawnItem() {
-            if (!gameActive) return;
-            const itemElement = document.createElement('div');
-            itemElement.classList.add('falling-item');
-            
-            const data = itemsData[Math.floor(Math.random() * itemsData.length)];
-            itemElement.innerHTML = data.emoji;
-            
-            let posX = Math.random() * 750;
-            itemElement.style.left = posX + 'px';
-            itemElement.style.top = '0px';
-            container.appendChild(itemElement);
+        function atualizar() {
+            player.x += player.dx;
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
 
-            let posY = 0;
-            function fall() {
-                if (!gameActive) {
-                    itemElement.remove();
-                    return;
-                }
-                posY += 4.5;
-                itemElement.style.top = posY + 'px';
+            // Atualiza objetos
+            for (let i = objetos.length - 1; i >= 0; i--) {
+                let obj = objetos[i];
+                obj.y += obj.speed;
 
-                if (posY >= 430 && posY < 510 && posX >= playerX - 30 && posX <= playerX + 40) {
-                    score += data.points;
-                    if (score < 0) score = 0;
-                    co2 += data.co2;
+                // Colisão com o jogador
+                let distX = (player.x + player.w/2) - obj.x;
+                let distY = (player.y + player.h/2) - obj.y;
+                let distancia = Math.sqrt(distX * distX + distY * distY);
+
+                if (distancia < 35) {
+                    pontos += obj.pts;
+                    co2 += obj.co2Change;
                     if (co2 < 0) co2 = 0;
-                    
-                    scoreEl.innerText = score;
-                    co2El.innerText = co2.toFixed(1);
-
-                    if (score > highScore) {
-                        highScore = score;
-                        highScoreEl.innerText = highScore;
-                        localStorage.setItem('pomerode_highscore_2min', highScore);
-                    }
-
-                    if (co2 > 30) {
-                        container.className = "sky-polluted";
-                        document.querySelectorAll('.christmas-lights-roof').forEach(el => el.classList.add('off'));
-                    } else {
-                        container.className = "sky-clean";
-                        document.querySelectorAll('.christmas-lights-roof').forEach(el => el.classList.remove('off'));
-                    }
-
-                    itemElement.remove();
-                    return;
-                }
-
-                if (posY > 520) {
-                    itemElement.remove();
-                } else {
-                    requestAnimationFrame(fall);
+                    objetos.splice(i, 1);
+                } else if (obj.y > canvas.height + 30) {
+                    objetos.splice(i, 1);
                 }
             }
-            requestAnimationFrame(fall);
         }
 
-        function startGameLoop() {
-            requestAnimationFrame(updatePlayer);
-            
-            let itemInterval = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(itemInterval);
-                    return;
-                }
-                spawnItem();
-            }, 750);
+        function desenharBoneco() {
+            // Corpo / Roupa
+            ctx.fillStyle = "#27ae60";
+            ctx.fillRect(player.x + 15, player.y + 20, 30, 25);
 
-            let timerInterval = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(timerInterval);
-                    return;
-                }
-                timeLeft--;
-                timeEl.innerText = timeLeft;
+            // Braços
+            ctx.fillStyle = "#d35400";
+            ctx.fillRect(player.x + 5, player.y + 22, 10, 8);
+            ctx.fillRect(player.x + 45, player.y + 22, 10, 8);
 
-                if (timeLeft <= 0) {
-                    gameActive = false;
-                    clearInterval(timerInterval);
-                    
-                    // Cálculo de impacto social simulado com base nos pontos e itens
-                    let hospitaisAtendidos = Math.floor(score / 40);
-                    let escolasApoiadas = Math.floor(score / 30);
-                    let rondasGarantidas = Math.floor(score / 35);
-                    
-                    document.getElementById('game-over-screen').classList.remove('hidden');
-                    document.getElementById('final-stats').innerHTML = `
-                        🏆 <b>Pontuação Final:</b> ${score} pts | <b>Recorde:</b> ${highScore} pts<br>
-                        🌍 <b>Pegada de CO₂ Final:</b> ${co2.toFixed(1)} kg<br><br>
-                        🤝 <b>Impacto Social na Cidade de Pomerode:</b><br>
-                        - 🏥 Hospitais mantidos com energia limpa: <b>${hospitaisAtendidos > 0 ? hospitaisAtendidos : 1}</b><br>
-                        - 🏫 Escolas públicas suportadas: <b>${escolasApoiadas > 0 ? escolasApoiadas : 1}</b><br>
-                        - 🚓 Rondas e segurança comunitária: <b>${rondasGarantidas > 0 ? rondasGarantidas : 1} unidades</b>
-                    `;
-                }
-            }, 1000);
+            // Cabeça
+            ctx.fillStyle = "#f39c12";
+            ctx.beginPath();
+            ctx.arc(player.x + 30, player.y + 12, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Cabelo detalhado
+            ctx.fillStyle = "#4a2511";
+            ctx.fillRect(player.x + 20, player.y + 2, 20, 5);
+            ctx.fillRect(player.x + 18, player.y + 5, 6, 6);
+
+            // Chapéu típico de colono
+            ctx.fillStyle = "#e67e22";
+            ctx.fillRect(player.x + 10, player.y - 2, 40, 5);
+            ctx.fillRect(player.x + 20, player.y - 10, 20, 8);
         }
+
+        function desenhar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Chão de Pomerode
+            ctx.fillStyle = "#2ecc71";
+            ctx.fillRect(0, canvas.height - 15, canvas.width, 15);
+
+            // Desenhar Jogador
+            desenharBoneco();
+
+            // Desenhar Objetos
+            for (let obj of objetos) {
+                ctx.save();
+                // Se for item ruim, desenha luz vermelha pulsante ao redor
+                if (obj.tipo === "ruim") {
+                    ctx.shadowColor = "red";
+                    ctx.shadowBlur = 15;
+                    ctx.beginPath();
+                    ctx.arc(obj.x, obj.y, 22, 0, Math.PI * 2);
+                    ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
+                    ctx.fill();
+                }
+                ctx.font = "28px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(obj.emoji, obj.x, obj.y);
+                ctx.restore();
+            }
+        }
+
+        function loop() {
+            if (tempoRestante > 0) {
+                atualizar();
+                desenhar();
+            }
+        }
+
+        // Intervalo de criação de itens
+        setInterval(criarObjeto, 900);
+
+        // Cronômetro de 120 segundos
+        const timerInterval = setInterval(() => {
+            if (tempoRestante > 0) {
+                tempoRestante--;
+                document.getElementById("txt-tempo").innerText = `Tempo: ${tempoRestante}s`;
+                document.getElementById("txt-pontos").innerText = `Pontos: ${pontos}`;
+                document.getElementById("txt-co2").innerText = `CO₂: ${co2.toFixed(1)} kg`;
+            } else {
+                clearInterval(timerInterval);
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "white";
+                ctx.font = "24px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("Fim da Missão!", canvas.width / 2, canvas.height / 2 - 20);
+                ctx.font = "16px sans-serif";
+                ctx.fillText(`Pontuação Final: ${pontos} | CO₂ Final: ${co2.toFixed(1)} kg`, canvas.width / 2, canvas.height / 2 + 20);
+            }
+        }, 1000);
+
+        setInterval(loop, 1000 / 60);
     </script>
 </body>
 </html>
